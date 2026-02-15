@@ -1,0 +1,135 @@
+SELECT * FROM aircrafts;
+
+SELECT aircraft_code,
+model
+FROM aircrafts;
+
+SELECT model, range
+FROM bookings.aircrafts_data
+WHERE range < 5000;
+
+SELECT book_ref, passenger_id, passenger_name
+FROM bookings.tickets
+WHERE passenger_name LIKE 'V%'
+OR passenger_name LIKE 'E%'
+
+SELECT flight_no, scheduled_departure, scheduled_arrival,
+departure_airport, arrival_airport
+FROM bookings.flights
+WHERE departure_airport = 'DME'
+AND scheduled_departure between '2017-08-31' and '2017-09-01'
+
+SELECT flight_no, scheduled_departure, scheduled_arrival,
+departure_airport, arrival_airport
+FROM bookings.flights
+WHERE departure_airport = 'DME'
+AND arrival_airport in ('LED','KZN')
+AND scheduled_departure between '2017-08-31' and '2017-09-01'
+
+SELECT flight_no, scheduled_departure, scheduled_arrival,
+actual_departure, actual_arrival
+FROM bookings.flights
+WHERE departure_airport = 'DME'
+AND actual_departure is NULL;
+
+SELECT flight_no, scheduled_departure, scheduled_arrival,
+COALESCE (actual_departure, '999-12-31'),
+COALESCE (actual_arrival, '999-12-31')
+FROM bookings.flights
+WHERE departure_airport = 'DME'
+AND arrival_airport = 'KZN';
+
+SELECT flight_no, scheduled_departure, scheduled_arrival,
+COALESCE (actual_departure, '999-12-31') AS "Actual Departure",
+COALESCE (actual_arrival, '999-12-31') "Actual Arrival"
+FROM bookings.flights
+WHERE departure_airport = 'DME'
+AND arrival_airport = 'KZN';
+
+SELECT scheduled_departure, flight_no,
+COALESCE (actual_departure::varchar, 'CANCELED') AS "Actual Departure"
+FROM bookings.flights
+WHERE departure_airport = 'DME'
+AND arrival_airport = 'KZN';
+
+SELECT scheduled_departure, flight_no,
+departure_airport, arrival_airport
+FROM bookings.flights
+WHERE departure_airport = 'DME'
+ORDER BY arrival_airport;
+
+SELECT scheduled_departure, flight_no,
+departure_airport, arrival_airport
+FROM bookings.flights
+WHERE departure_airport = 'DME'
+ORDER BY arrival_airport, scheduled_departure DESC;
+
+SELECT DISTINCT
+departure_airport, arrival_airport
+FROM bookings.flights
+ORDER BY 1,2;
+
+SELECT scheduled_departure,
+'from' || departure_airport::varchar || 'to'
+       || arrival_airport::varchar AS Destination, status
+FROM bookings.flights;	   
+
+SELECT 
+	book_ref,
+	substring (passenger_name from 1 for position (' 'in passenger_name)) as Name,
+	substring (passenger_name from position (' 'in passenger_name)) as Surname
+FROM bookings.tickets;
+
+SELECT
+	AVG (amount) AS Average,
+	SUM (amount) AS Summary 
+FROM bookings.ticket_flights
+WHERE fare_conditions = 'Economy';
+
+SELECT
+	COUNT(*)
+FROM bookings.ticket_flights
+WHERE fare_conditions = 'Economy';
+
+SELECT
+	COUNT(*)
+FROM bookings.flights
+WHERE COALESCE(actual_arrival::date, '2017-06-12') = '2017-06-12';
+
+SELECT
+	COUNT(actual_arrival)
+FROM bookings.flights
+WHERE COALESCE(actual_arrival::date, '2017-06-12') = '2017-06-12';
+
+SELECT
+	COUNT(DISTINCT departure_airport)
+FROM bookings.flights	
+
+SELECT
+	departure_airport,
+	COUNT(actual_arrival)
+FROM bookings.flights
+GROUP BY departure_airport;	
+
+SELECT
+	departure_airport,
+	COUNT(actual_arrival)
+FROM bookings.flights
+GROUP BY departure_airport	
+HAVING COUNT(actual_arrival) < 50;
+
+SELECT
+	departure_airport,
+	arrival_airport,
+	COUNT(actual_arrival)
+FROM bookings.flights
+GROUP BY ROLLUP (departure_airport, arrival_airport)
+HAVING COUNT(actual_arrival) > 300;	
+
+SELECT
+	departure_airport,
+	arrival_airport,
+	COUNT(actual_arrival)
+FROM bookings.flights
+GROUP BY CUBE (departure_airport, arrival_airport)
+HAVING COUNT(actual_arrival) > 300;	
